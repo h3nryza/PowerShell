@@ -1,4 +1,4 @@
-#Easy-Sql
+# Easy-Sql
 This script uses e fules for perform its functions
 - sqlsettings.xml
  - This file contains the encrypted settings to connect to your SQL database. Encryption is created using this script and easy-aes (see Create-SettingsFile)
@@ -7,7 +7,7 @@ This script uses e fules for perform its functions
 - easy-aes.ps1
  - This is a module to help make AES encryption a bit easier
 
-##Functions
+## Functions
 - Create-SettingsFile():  Creates the xml for connection to SQL with encrypted information. Uses module Easy-AES
 - Create-HeadersFile(): Created the headers file with no information for you to fill in the blanks
 - Get-SqlSettings(): Gets the de-encrypted information from the SqlSettings.xml and returns it as  string. Uses module Easy-AES
@@ -20,9 +20,9 @@ This script uses e fules for perform its functions
 - truncate-sqltable(): Truncats the table from param $table. Calls functions  Get-SqlSettings()
 - query-Sql(): Runs the query from param $inputdata. Calls functions  Get-SqlSettings()
 
-##Function Information
+## Function Information
 
-###Create-SettingsFile()
+### Create-SettingsFile()
 	__Input Parameters__
 	[string]$FilePath : Full path to the sqlsettings.xml file for creation
     [string]$servername: Name of the sql server needing for connection
@@ -38,7 +38,7 @@ This script uses e fules for perform its functions
 	Create-SettingsFile -FilePath ".\sqlsettings.xml" -servername "myserver" -database "mydatabase" -Table "mytable" 
 	Create-SettingsFile -FilePath ".\sqlsettings.xml" -servername "myserver" -database "mydatabase" -Table "mytable" -username "domain\name" -password "secretpassword"
 	
-###Create-HeadersFile()	
+### Create-HeadersFile()	
 	__Input Parameters__
 	[string]$FilePath : Full path to the sqlheaders.xml file for creation
 	
@@ -48,7 +48,7 @@ This script uses e fules for perform its functions
 	__Examples__
 	Create-HeadersFile -FilePath ".\sqlheaders.xml"
 
-###Get-SqlSettings()	
+### Get-SqlSettings()	
 	__Input Parameters__
 	[string]$FilePath : Full path to the sqlsettings.xml file
 	
@@ -58,7 +58,7 @@ This script uses e fules for perform its functions
 	__Examples__
 	Create-SqlSettings -FilePath ".\sqlsettings.xml"
 
-###Get-SqlHeaders()	
+### Get-SqlHeaders()	
 	__Input Parameters__
 	[string]$FilePath : Full path to the sqlheaders.xml file
 
@@ -68,7 +68,7 @@ This script uses e fules for perform its functions
 	__Examples__
 	Create-SqlSettings -FilePath ".\sqlheaders.xml"
 	
-##format-sqldata()
+## format-sqldata()
 	__Input Parameters__
 	$inputData : Data in the form of an array
 
@@ -78,7 +78,7 @@ This script uses e fules for perform its functions
 	__Examples__
 	Create-SqlSettings -inputData ".\sqlheaders.xml"
 	
-##exec-Sqlstatement()
+## exec-Sqlstatement()
 	__Input Parameters__
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
     [string]$inputData: Sql statement to execute
@@ -91,7 +91,7 @@ This script uses e fules for perform its functions
 	exec-Sqlstatement -SqlSettingsPath ".\sqlsettings.xml" -inputData "drop table tablename"
 	exec-Sqlstatement -SqlSettingsPath ".\sqlsettings.xml" -inputData "drop table tablename" -integrated
 	
-##create-sqldatabase()
+## create-sqldatabase()
 	__Input Parameters__
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
     [switch]$integrated : Forces integrated security
@@ -103,7 +103,7 @@ This script uses e fules for perform its functions
 	create-sqldatabase -SqlSettingsPath ".\sqlheaders.xml" 
 	create-sqldatabase -SqlSettingsPath ".\sqlheaders.xml" -integrated
 	
-##create-sqltable()
+## create-sqltable()
 	__Input Parameters__
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
 	[string]$SqlHeadersPath: Path to the sqlheaders.xml file
@@ -116,7 +116,7 @@ This script uses e fules for perform its functions
 	create-sqltable -SqlSettingsPath ".\sqlsettings.xml"  -SqlHeadersPath ".\sqlheaders.xml" 
 	create-sqltable -SqlSettingsPath ".\sqlsettings.xml"  -SqlHeadersPath ".\sqlheaders.xml"  -integrated
 	
-##insert-sqldata()
+## insert-sqldata()
 	__Input Parameters__
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
 	[string]$SqlHeadersPath: Path to the sqlheaders.xml file
@@ -130,7 +130,7 @@ This script uses e fules for perform its functions
 	insert-sqldata -SqlSettingsPath ".\sqlsettings.xml"  -SqlHeadersPath ".\sqlheaders.xml" -arrayData $arrayOfData
 	insert-sqldata -SqlSettingsPath ".\sqlsettings.xml"  -SqlHeadersPath ".\sqlheaders.xml" -arrayData $arrayOfData  -integrated
 	
-##truncate-sqltable()
+## truncate-sqltable()
 	__Input Parameters__
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
 	[string]$table: Table to be truncated
@@ -143,7 +143,7 @@ This script uses e fules for perform its functions
 	truncate-sqltable -SqlSettingsPath ".\sqlsettings.xml"  -table "mytable"
 	truncate-sqltable-SqlSettingsPath ".\sqlsettings.xml"  -table "mytable"  -integrated
 	
-##query-Sql()
+## query-Sql()
 	__Input Parameters__
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
 	[string]$inputdata: Query needing to be run on sql
