@@ -1,5 +1,5 @@
 # Easy-Sql
-This script uses e fules for perform its functions
+This script uses rules for perform its functions
 - sqlsettings.xml
  - This file contains the encrypted settings to connect to your SQL database. Encryption is created using this script and easy-aes (see Create-SettingsFile)
 - sqlheaders.xml
@@ -121,6 +121,7 @@ This script uses e fules for perform its functions
 	[string]$SqlSettingsPath: Full path to the sqlheaders.xml file 
 	[string]$SqlHeadersPath: Path to the sqlheaders.xml file
 	[Array]$arrayData: Array of data that needs to be inserted into SQL. Where each row contains sql row
+	[string]easySqlLog: Full path to logfile, will overwrite daily
     [switch]$integrated : Forces integrated security
 
 	__Returns__

@@ -125,4 +125,3 @@ function Decrypt-File($in,$out){
     "$resultdatacomp" | set-content "$out\$resultpos$resultext" 
 }
 
-  

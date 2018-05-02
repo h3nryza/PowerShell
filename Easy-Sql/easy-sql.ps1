@@ -28,7 +28,7 @@
 
 function Create-SettingsFile(){
     param(
-    [string]$FilePath=".\sqlsettings.xml",
+    [string]$FilePath="`.`\sqlsettings.xml",
     [string]$name="IAMDEFAULT",
     [string]$servername="IAMDEFAULT",
     [string]$database="IAMDEFAULT",
@@ -115,9 +115,8 @@ function Create-HeadersFile(){
 
 function Get-SqlSettings(){
     param(
-    $SqlSettingsPath=".\sqlsettings.xml"
+    $SqlSettingsPath="`.`\sqlsettings.xml"
     )
-    
     import-module .\easy-aes.ps1
     #Get encrypted information from XML
     [xml]$XmlDocument = Get-Content $SqlSettingsPath
@@ -132,7 +131,6 @@ function Get-SqlSettings(){
     $table = Decrypt-String $table_encrypted
     $username = Decrypt-String $username_encrypted
     $password = Decrypt-String $password_encrypted
-
     return "$servername,$database,$table,$port,$username,$password"
 
 }
@@ -197,20 +195,27 @@ param(
 
 function exec-Sqlstatement(){
 param(
-    [string]$SqlSettingsPath=".\sqlsettings.xml",
+    [string]$SqlSettingsPath="`.`\sqlsettings.xml",
     [string]$inputData,
     [switch]$integrated
     )
     
     #Set the SQL settings obtained from XML
-    $sqlSettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettingssplit = $sqlsettings.split(",")
+    $servername = $sqlsettingssplit[0]
+    $database = $sqlsettingssplit[1]
+    $table = $sqlsettingssplit[2]
+    $port = $sqlsettingssplit[3]
+    $username = $sqlsettingssplit[4]
+    $password = $sqlsettingssplit[5]
     $SqlConnection = New-Object System.Data.SqlClient.SqlConnection 
     #Check for switch to know whether to set connection with username and password or integrated security
     if($integrated){
-        $SqlConnection.ConnectionString = "Server = $sqlSettings[0];port=$sqlSettings[3]; Database = $sqlSettings[1]; Integrated Security = True"
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database =$database; Integrated Security = True"
     }
     else{
-        $SqlConnection.ConnectionString = "Server = $sqlSettings[0];port=$sqlSettings[3]; Database = $sqlSettings[1]; User ID = $sqlSettings[3]; Password = $sqlSettings[4]"
+         $SqlConnection.ConnectionString = "Server = $servername,1433; Database = $database; User ID = $username; Password = $password"
     }
    
     #Open the Connection
@@ -231,26 +236,28 @@ param(
 
 function create-sqldatabase(){
     param(
-    [string]$SqlSettingsPath=".\sqlsettings.xml",
+    [string]$SqlSettingsPath="`.`\sqlsettings.xml",
     [switch]$integrated
     )
 
     #Set the SQL settings obtained from XML
-    $sqlSettings = Get-SqlSettings $SqlSettingsPath
-    $sqlSettings = $sqlSettings.split(",")
-    $Server = $sqlSettings[0]
-    $Database = $sqlSettings[1]
-    $User = $sqlSettings[3]
-    $Password = $sqlSettings[4]
-
+    $sqlsettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettingssplit = $sqlsettings.split(",")
+    $servername = $sqlsettingssplit[0]
+    $database = $sqlsettingssplit[1]
+    $table = $sqlsettingssplit[2]
+    $port = $sqlsettingssplit[3]
+    $username = $sqlsettingssplit[4]
+    $password = $sqlsettingssplit[5]
     $SqlConnection = New-Object System.Data.SqlClient.SqlConnection 
     #Check for switch to know whether to set connection with username and password or integrated security
     if($integrated){
-        $SqlConnection.ConnectionString = "Server = $Server; Database = $sqlSettings; Integrated Security = True"
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database =$database; Integrated Security = True"
     }
     else{
-        $SqlConnection.ConnectionString = "Server = $Server; Database = $sqlSettings; User ID = $User; Password = $Password"
-    }
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database = $database; User ID = $username; Password = $password"
+        }
+       
    
     #Open the Connection
     $SqlConnection.Open()
@@ -270,27 +277,29 @@ function create-sqldatabase(){
 
 function create-sqltable(){
 param(
-    [string]$SqlSettingsPath=".\sqlsettings.xml",
+    [string]$SqlSettingsPath="`.`\sqlsettings.xml",
     [string]$SqlHeadersPath=".\sqlheaders.xml",
     [switch]$integrated
     )
 
     #Set the SQL settings obtained from XML
-    $sqlSettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
-    $sqlSettings = $sqlSettings.split(",")
-    $Server = $sqlSettings[0]
-    $Database = $sqlSettings[1]
-    $User = $sqlSettings[3]
-    $Password = $sqlSettings[4]
-
+    $sqlsettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettingssplit = $sqlsettings.split(",")
+    $servername = $sqlsettingssplit[0]
+    $database = $sqlsettingssplit[1]
+    $table = $sqlsettingssplit[2]
+    $port = $sqlsettingssplit[3]
+    $username = $sqlsettingssplit[4]
+    $password = $sqlsettingssplit[5]
     $SqlConnection = New-Object System.Data.SqlClient.SqlConnection 
     #Check for switch to know whether to set connection with username and password or integrated security
     if($integrated){
-        $SqlConnection.ConnectionString = "Server = $Server; Database = $sqlSettings; Integrated Security = True"
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database =$database; Integrated Security = True"
     }
     else{
-        $SqlConnection.ConnectionString = "Server = $Server; Database = $sqlSettings; User ID = $User; Password = $Password"
-    }
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database = $database; User ID = $username; Password = $password"
+        }
+       
    
     #Open the Connection
     $SqlConnection.Open()
@@ -318,22 +327,36 @@ param(
 
 function insert-sqldata(){
 param(
-    [string]$SqlSettingsPath=".\sqlsettings.xml",
+    [string]$SqlSettingsPath="`.`\sqlsettings.xml",
     [string]$SqlHeadersPath=".\sqlheaders.xml",
     [Array]$arrayData,
+    [string]$easySqlLog="`.`\easySqlLog.txt",
     [switch]$integrated
     )
 
+    if(test-path $easySqlLog){
+        #Remove old Log File
+        remove-item -Path $outfile -Force
+    }
+
     #Set the SQL settings obtained from XML
-    $sqlSettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettingssplit = $sqlsettings.split(",")
+    $servername = $sqlsettingssplit[0]
+    $database = $sqlsettingssplit[1]
+    $table = $sqlsettingssplit[2]
+    $port = $sqlsettingssplit[3]
+    $username = $sqlsettingssplit[4]
+    $password = $sqlsettingssplit[5]
     $SqlConnection = New-Object System.Data.SqlClient.SqlConnection 
     #Check for switch to know whether to set connection with username and password or integrated security
     if($integrated){
-        $SqlConnection.ConnectionString = "Server = $sqlSettings[0];port=$sqlSettings[3]; Database = $sqlSettings[1]; Integrated Security = True"
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database =$database; Integrated Security = True"
     }
     else{
-        $SqlConnection.ConnectionString = "Server = $sqlSettings[0];port=$sqlSettings[3]; Database = $sqlSettings[1]; User ID = $sqlSettings[3]; Password = $sqlSettings[4]"
-    }
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database = $database; User ID = $username; Password = $password"
+        }
+       
    
     #Open the Connection
     $SqlConnection.Open()  
@@ -341,23 +364,35 @@ param(
     
     #Get Sql header information from XML 
     $tableinfo = Get-SqlHeaders $SqlHeadersPath -clean
-    $table = $tableinfo[0]
+    $table = $tableinfo.split(",")[0]
     $headers = format-sqldata $tableinfo[1]
     $errorRowCounter = 0
-    foreach($datarow in $arrayData){
+    foreach($datarow in $arrayData.split("`n")){
         #Error checking statement
-        if($datarow.length -eq $headers.length){
+        $data = @()
+        foreach($item in $datarow.split(",")){
+            $data += "'$item',"
+        }
+
+        $dataPreClean = -join $data
+        $datarow = $dataPreClean.substring(0, $dataPreClean.length-1)
+        if($datarow.split(",").length -eq $headers.split(",").length){
             $sqlCMD = "insert into $table ($headers) Values ($datarow)"
+            "SUCCESS: $sqlCMD" | out-file $easySqlLog -Append
         }
         else{
-            write-host "ERROR: Dataset in line $errorRowCounter does not Equal headers" 
+            "insert into $table ($headers) Values ($datarow)"
+            "FAILURE: $sqlCMD_Fail" | out-file $easySqlLog -Append
         }
        
     $dbwrite = $SqlConnection.CreateCommand()	
     $dbwrite.CommandText = $sqlCMD						
-    $dbwrite.ExecuteNonQuery()	
-    #Close connection
+    $dbwrite.ExecuteNonQuery()
+    $errorRowCounter = $errorRowCounter + 1	
+    
     }
+
+    #Close connection
     $SqlConnection.close() 
 }
 
@@ -365,7 +400,7 @@ param(
 
 function truncate-sqltable(){
 param(
-    [string]$SqlSettingsPath=".\sqlsettings.xml",
+    [string]$SqlSettingsPath="`.`\sqlsettings.xml",
     [string]$table,
     [switch]$integrated
     )
@@ -382,21 +417,29 @@ param(
 
 function query-Sql(){
 param(
-    [string]$SqlSettingsPath=".\sqlsettings.xml",
+    [string]$SqlSettingsPath="`.`\sqlsettings.xml",
     [string]$inputdata,
     [switch]$integrated
     )
     
     #Set the SQL settings obtained from XML
-    $sqlSettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettings = Get-SqlSettings -sqlSettingsPath $SqlSettingsPath
+    $sqlsettingssplit = $sqlsettings.split(",")
+    $servername = $sqlsettingssplit[0]
+    $database = $sqlsettingssplit[1]
+    $table = $sqlsettingssplit[2]
+    $port = $sqlsettingssplit[3]
+    $username = $sqlsettingssplit[4]
+    $password = $sqlsettingssplit[5]
     $SqlConnection = New-Object System.Data.SqlClient.SqlConnection 
     #Check for switch to know whether to set connection with username and password or integrated security
     if($integrated){
-        $SqlConnection.ConnectionString = "Server = $sqlSettings[0];port=$sqlSettings[3]; Database = $sqlSettings[1]; Integrated Security = True"
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database =$database; Integrated Security = True"
     }
     else{
-        $SqlConnection.ConnectionString = "Server = $sqlSettings[0];port=$sqlSettings[3]; Database = $sqlSettings[1]; User ID = $sqlSettings[3]; Password = $sqlSettings[4]"
-    }
+        $SqlConnection.ConnectionString = "Server = $servername,1433; Database = $database; User ID = $username; Password = $password"
+        }
+       
    
     #Open the Connection
     $SqlConnection.Open()
@@ -414,3 +457,15 @@ param(
 
     return $resultTable
 }
+# 8K0CPA0NOh1wOTORJ4K1cX0kZlOD1NTCdYM+1MESWAGHm2TJMwDUWtV18fDWoATG
+# Zo5xLOV7j8inyD00+Wq4IjnvP17UV6XQ3634A6W4FKiqURIC7m8DEKiMmDd2jLGR
+# ZWyWBO+7xjvMCuUz5/BpYMagKVNMtHDT2ltDu9/3xIWz1IGqdVSVbWzUKTGCAYAw
+# ggF8AgEBMGAwSTETMBEGCgmSJomT8ixkARkWA25ldDEdMBsGCgmSJomT8ixkARkW
+# DXVjcy1zb2x1dGlvbnMxEzARBgNVBAMTClVDUy1TdWItQ0ECE00AACxtji/nSEuz
+# Y/UAAQAALG0wCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAw
+# GQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
+# AQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFIV4AgA4p/j1cYEFv4cWIyUe8oayMA0G
+# CSqGSIb3DQEBAQUABIGAiEIv5U37Z4Rc7sVpqT/fdAKsv23vP7/liCG5qv3tFphG
+# e5bcGJ1G1/wxL7cjBWZWH2I/qTCw2vnxn+MOAXh76GW2FlHoH6Gj9Avu4gsOO5n8
+# WI2vdtoHDhHvqUQjjz3poOaBsMDRkVfyLUemY+RKVAAisEW1q4pGDvNUzcjKY+w=
+# SIG # End signature block

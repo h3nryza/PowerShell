@@ -125,6 +125,3 @@ function Decrypt-File($in,$out){
     "$resultdatacomp" | set-content "$out\$resultpos$resultext" 
 }
 
-    Encrypt-File -in "C:\eula.1028.txt" -out "c:\temp\"
-    Encrypt-File -in "C:\temp\eula.1028" -out "c:\temp\"
-
