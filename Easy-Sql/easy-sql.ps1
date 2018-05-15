@@ -371,6 +371,7 @@ param(
         #Error checking statement
         $data = @()
         foreach($item in $datarow.split(",")){
+            $cleandata = $item.trim()
             $data += "'$item',"
         }
 
